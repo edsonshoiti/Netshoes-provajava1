@@ -1,0 +1,16 @@
+package br.com.netshoes.domain;
+
+
+public class Message {
+
+	private final String status;
+	
+	public Message(String status) {
+		this.status = status;
+	}
+	
+	public String getStatus() {
+		return status;
+	}
+	
+}

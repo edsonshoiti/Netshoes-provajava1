@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
+  layout:decorator="layout">
+  <body>
+    <h1 layout:fragment="header" th:utext="#{cep.search.title}">Consulta de Campanha</h1>
+    <div layout:fragment="content" class="container">
+      <form class="mainForm">
+        <div class="col-md-3 form-group">
+          <label for="text"  th:text="#{cep.search.cep}">campanha</label>
+          <input type="text" name="cep" class="form-control" th:placeholder="#{campanha.search.placeholder.campanha}" />
+        </div>
+        
+        <div class="col-md-12 form-group">
+          <button type="button" class="btn btn-lg btn-app btn-primary" 
+            th:text="#{campanha.search.btn.pesquisar}">pesquisar</button>
+        </div>
+      </form>
+      
+      <div class="col-md-12">
+        <address class="address"></address>
+      </div>
+    </div>
+    <script layout:fragment="jsOnPage" th:inline="javascript">
+    /*<![CDATA[*/
+      function fillAddress(data) {
+        if (data) {
+    	  var content = data.nomecompleto + ' - CEP: ' + data.chave 
+    	    + ' - ' + data.campanha + ' - ' +data.email + ' - ' + data.timecoracao;
+    	  $('.address').append('<strong>'+content+'</strong>');
+    	} else {
+          $('.address').html('');
+    	}
+      }
+      
+      function findCampanha() {
+        var key = $('input[name="cep"]').val();
+        
+        if (!$(".mainForm").valid()) {
+          return;
+        }
+        
+        clearMessages();
+        fillAddress();
+        $(".btn-app").prop('disabled', true);
+          
+        $.ajax({
+          type: "GET",
+          url: "/ceps/"+key,
+          success: function(json) {
+            if (json) {
+              if (json.chave != key) {
+                showWarning('A pesquisa encontrou o Campanha ' + json.chave + ' por proximidade.');
+              }
+            }
+            fillAddress(json);
+            $(".btn-app").prop('disabled', false);
+          },
+          error: function(data) {
+            $(".btn-app").prop('disabled', false);
+            if (data.status == '404') {
+              showWarning('A campanha '+key+" não foi encontrado.")
+              $(".btn-app").prop('disabled', false);
+              return;
+            }
+            var msgError;
+            if (data.responseText) {
+              var responseText = JSON.parse(data.responseText);
+              msgError = responseText["message"];
+            } else {
+              msgError = data.statusText;
+            }
+            showError("Não foi possivel obter o Campanha: "+msgError);
+            console.log(data);
+          }
+        });
+      }
+      
+      $(document).ready(function() {
+        activeNavigation('campanha');
+        $(".btn-app").click(function(e){
+          e.preventDefault();
+          findCampanha();
+        });
+        
+        $(".mainForm").validate({
+          rules: {
+            campanha: {
+              required: true
+            }
+          },
+          messages: {
+          	campanha: {
+              required: 'Campanha é obrigatório.'
+            }
+          },
+          highlight: function(element) {
+            $(element).closest('.form-group').addClass('has-error');
+          },
+          unhighlight: function(element) {
+            $(element).closest('.form-group').removeClass('has-error');
+          }
+        });
+      });
+    /*]]>*/
+    </script>
+  </body>
+</html>

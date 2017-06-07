@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
+  layout:decorator="layout">
+  <body>
+    <h1 layout:fragment="header" th:utext="#{timecoracao.form.title(Visualizar)}">Visualizar</h1>
+    <div layout:fragment="content" class="container">
+      <div class="col-md-12 text-right">
+        <a th:href="@{/}" href="timecoracao.html" th:text="#{timecoracao.form.list.enderecos}">
+          Lista
+        </a>
+      </div>
+      
+      <div class="col-md-12">
+        <address class="address"></address>
+      </div>
+      
+    </div>
+    <script layout:fragment="jsOnPage" th:inline="javascript">
+    /*<![CDATA[*/
+      var timecoracaoId = /*[[${id}]]*/ 0;
+    
+      function fillAddress(data) {
+        if (data) {
+    	  var content = data.nomecompleto + ', ' + data.campanha + ', ' + data.timecoracao + data.email ;
+    	  $('.address').append('<strong>'+content+'</strong>');
+    	} else {
+          $('.address').html('');
+    	}
+      }
+      
+      function findTimecoracao() {
+        clearMessages();
+        fillAddress();
+        
+        $.ajax({
+          url: "/timecoracao/"+timecoracaoId,
+          dataType: 'json',
+          success: function(json) {
+            fillAddress(json);
+          },
+          error: function(data){
+        	showError("Não foi possivel obter o Timecoracao");
+            console.log(data);
+          }
+        });
+      }
+      
+      $(document).ready(function() {
+        activeNavigation('timecoracao');
+        if (timecoracaoId) {
+          findEndereco();
+        }
+      });
+    /*]]>*/
+    </script>
+  </body>
+</html>

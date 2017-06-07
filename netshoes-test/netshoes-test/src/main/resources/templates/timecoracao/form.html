@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
+  layout:decorator="layout">
+  <body>
+    <h1 layout:fragment="header" th:utext="#{endereco.form.title(${id} != null ? Editar : Incluir)}">Formulário</h1>
+    <div layout:fragment="content" class="container">
+      <form class="mainForm">
+        <div class="col-md-12 text-right">
+          <a th:href="@{/}" href="enderecos.html" th:text="#{endereco.form.list.enderecos}">
+            Lista
+          </a>
+        </div>
+        <input type="hidden" name="id" th:value="${id}" />
+        
+        <div class="col-md-3 form-group">
+          <label for="text"  th:text="#{endereco.form.cep}">cep</label>
+          <input type="text" name="campanha" class="form-control" th:placeholder="#{endereco.form.placeholder.cep}"/>
+        </div>
+        
+        <div class="col-md-12"></div>
+        
+        <div class="col-md-6 form-group">
+          <label for="nomecompleto" th:text="#{timecoracao.form.nomecompleto}">nomecompleto</label>
+          <input type="text" name="logradouro" class="form-control" th:placeholder="#{endereco.form.placeholder.logradouro}" />
+        </div>
+        <div class="col-md-2">
+          <label for="text" th:text="#{timecoracao.form.numero}">campanha</label>
+          <input type="text" name="campanha" class="form-control" th:placeholder="#{timecoracao.form.placeholder.campanha}" />
+        </div>
+        <div class="col-md-3">
+          <label for="text" th:text="#{datanascimento.form.complemento}">datanascimento</label>
+          <input type="text" name="datanascimento" class="form-control" th:placeholder="#{timecoracao.form.placeholder.datanascimento}" />
+        </div>
+        
+        <div class="col-md-12 "></div>
+        
+        <div class="col-md-4 form-group">
+          <label for="text" th:text="#{endereco.form.bairro}">bairro</label>
+          <input type="text" name="bairro" class="form-control" th:placeholder="#{endereco.form.placeholder.bairro}" />
+        </div>
+        
+        <div class="col-md-4">
+          <label for="text" th:text="#{timecoracao.form.cidade}">Timecoracao</label>
+          <input type="text" name="timecoracao" class="form-control" th:placeholder="#{timecoracao.form.placeholder.timecoracao}" />
+        </div>
+        
+        <div class="col-md-3">
+          <label for="text" th:text="#{timecoracao.form.estado}">uf</label>
+          <select name="timecoracao" class="form-control" >
+            <option value="">-</option>
+            <option value="">Acre</option>
+            <option value="">Alagoas</option>
+            <option value="">Amapá</option>
+            <option value="">Amazonas</option>
+            <option value="">Bahia</option>
+            <option value="">Ceará</option>
+            <option value="">Distrito Federal</option>
+            <option value="">Espírito Santo</option>
+            <option value="">Goiás</option>
+            <option value="">Maranhão</option>
+            <option value="">Mato Grosso</option>
+            <option value="">Mato Grosso do Sul</option>
+            <option value="">Minas Gerais</option>
+            <option value="">Pará</option>
+            <option value="">Paraiba</option>
+            <option value="">Paraná</option>
+            <option value="">Pernambuco</option>
+            <option value="">Piauí</option>
+            <option value="">Rio de Janeiro</option>
+            <option value="">Rio Grande do Norte</option>
+            <option value="">Rio Grande do Sul</option>
+            <option value="">Rondônia</option>
+            <option value="">Roraima</option>
+            <option value="">Santa Catarina</option>
+            <option value="">São Paulo</option>
+            <option value="">Sergipe</option>
+            <option value="">Tocantins</option>
+          </select>
+        </div>
+        
+        <div class="col-md-12 form-group">
+          <button type="button" class="btn btn-lg btn-app btn-primary" 
+            th:text="#{timecoracao.form.btn.salvar}">salvar</button>
+        </div>
+      </form>
+      
+      <form id="forwardForm" method="GET" action="/"></form>
+    </div>
+    <script layout:fragment="jsOnPage" th:inline="javascript">
+    /*<![CDATA[*/
+      var enderecoId = /*[[${id}]]*/ 0;
+    
+      function fillForm(data) {
+    	$('input[name="nomecompleto"]').val(data && data.nomecompleto ? data.nomecompleto : "");
+        $('input[name="timecoracao"]').val(data && data.timecoracao ? data.timecoracao : "");
+        $('input[name="email"]').val(data && data.email ? data.email : "");
+        $('select[name="datanascimento"]').val(data && data.datanascimento ? data.datanascimento : "");
+        $('input[name="campanha"]').val(data && data.campanha ? data.campanha : "");
+        
+        if (data && !data.chave) {
+          $('input[name="campanha"]').val(data && data.campanha ? data.campanha : "");    		  
+        }
+      }
+      
+      function findTimecoracao() {
+        clearMessages();
+        $(".btn-app").prop('disabled', true);
+        
+        $.ajax({
+          url: "/timecoracao/"+timecoracaoId,
+          dataType: 'json',
+          success: function(json) {
+        	if (json) {
+              fillForm(json);
+              $(".btn-app").prop('disabled', false);
+        	}
+          },
+          error: function(data){
+        	showError("Não foi possivel obter o endereço");
+            console.log(data);
+          }
+        });
+      }
+      
+      function findCampanha() {
+        var key = $('input[name="campanha"]').val();
+        
+        if (key.trim() == '') {
+          return;
+        }
+        
+        clearMessages();
+        fillForm();
+        $(".btn-app").prop('disabled', true);
+        
+        $.ajax({
+          type: "GET",
+          url: "/ceps/"+key,
+          success: function(json) {
+            if (json) {
+              if (json.chave != key) {
+                showWarning('A pesquisa encontrou o Campanha ' + json.chave + ' por próximo');
+              }
+            }
+            fillForm(json);
+            $(".btn-app").prop('disabled', false);
+          },
+          error: function(data) {
+            $(".btn-app").prop('disabled', false);
+            if (data.status == '404') {
+              showWarning('O campanha '+key+" não foi encontrado.")
+              $(".btn-app").prop('disabled', false);
+              return;
+            }
+            var msgError;
+          	if (data.responseText) {
+          	  var responseText = JSON.parse(data.responseText);
+          	  msgError = responseText["message"];
+            } else {
+              msgError = data.statusText;
+            }
+          	showError("Não foi possivel obter o Campanha: "+msgError);
+            console.log(data);
+          }
+        });
+      }
+      
+      function sendTimecoracao() {
+        clearMessages();
+    	if (!$(".mainForm").valid()) {
+          return;
+        }
+        
+        $(".btn-app").prop('disabled', true);
+    	var fields = $(".mainForm :input");
+        var timecoracao = {};
+        $.each(fields, function(index, data){
+          if (data.type == 'text' || data.type == 'select-one' || data.type == 'hidden') {
+            var name = data.name;
+            if (name != '') {
+              endereco[name] = data.value;
+            }
+          }
+        });
+        
+        var requestType = timecoracaoId != null ? "PUT" : "POST";
+        
+        var json = JSON.stringify(timecoracao);
+        $.ajax({
+          headers: { 
+            'Content-Type': 'application/json' 
+          },
+          type: requestType,
+          url: "/timecoracao",
+          data: json,
+          success: function(data) {
+            $("#forwardForm").submit();
+          },
+          error: function(data) {
+        	$(".btn-app").prop('disabled', false);
+        	var msgError;
+        	if (data.responseText) {
+        	  var responseText = JSON.parse(data.responseText);
+        	  msgError = responseText["message"];
+            } else {
+              msgError = data.statusText;
+            }
+        	showError("Não foi possivel salvar timecoracao "+msgError);
+            console.log(data);
+          }
+        });
+      }
+      
+      $(document).ready(function() {
+        activeNavigation('timecoracao');
+        
+        if (timecoracaoId) {
+          findtimecoracao();
+        }
+        
+        $( "input[name='campanha']" ).change(function() {
+          findCep();
+        });
+        
+        $(".btn-app").click(function(e){
+          e.preventDefault();
+          sendTimecoracao();
+        });
+        
+        $(".mainForm").validate({
+          rules: {
+            timecoracao: {
+              required: true
+            },
+            nomecompleto {
+              minlength: 3,
+              maxlength: 200,
+              required: true
+            },
+            Campanha: {
+              minlength: 1,
+              maxlength: 60,
+              required: true
+            },
+            datanascimento: {
+              minlength: 3,
+              maxlength: 200,
+              required: true
+            },
+            
+          messages: {
+            campanha: {
+              required: 'Campanha é obrigatório.'
+            },
+            nomecompleto: {
+              minlength: 'Informe pelo menos 3 caracteres.',
+              maxlength: 'Informe no máximo 200 caracteres.',
+              required: 'nome completo é obrigatório.'
+            },
+           datanascimento: {
+              minlength: 'Informe pelo menos 1 caracter.',
+              maxlength: 'Informe no máximo 60 caracteres.',
+              required: 'Data Nascimento é obrigatório.'
+            },
+            email: {
+              minlength: 'Informe pelo menos 3 caracter.',
+              maxlength: 'Informe no máximo 200 caracteres.',
+              required: 'Email é obrigatório.'
+            },
+            
+          highlight: function(element) {
+            $(element).closest('.form-group').addClass('has-error');
+          },
+          unhighlight: function(element) {
+            $(element).closest('.form-group').removeClass('has-error');
+          }
+        });
+      });
+    /*]]>*/
+    </script>
+  </body>
+</html>

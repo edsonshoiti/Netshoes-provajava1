@@ -1,0 +1,6 @@
+A Stream API faz uso do framework de processamento paralelo Fork/Join presente na JDK desde o Java 7, tornando o controle de threads e 
+demais recursos de paralelismo totalmente transparentes.
+
+A stream API possui um recurso interessante para filtrar grandes volumes de dados. A fim de ganharmos em desempenho essa filtragem pode ser feita de forma paralela aproveitando o poder de processamento dos computadores. 
+
+Para isso temos que obter uma instância da interface Stream executando o método parallelStream() 
